@@ -3,7 +3,6 @@ import sys
 import random
 import time
 
-#h
 
 def main():
     # turn on pygame
