@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 import time
-
+#hi
 
 def main():
     # turn on pygame
