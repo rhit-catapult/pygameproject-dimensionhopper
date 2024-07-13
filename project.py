@@ -7,7 +7,7 @@ import time
 def main():
     # turn on pygame
     pygame.init()
-
+#h
 
     # create a screen
     pygame.display.set_caption("Cool Project")
