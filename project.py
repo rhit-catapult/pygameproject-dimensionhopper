@@ -3,7 +3,7 @@ import sys
 import random
 import time
 
-
+#arthurs commit
 def main():
     # turn on pygame
     pygame.init()
