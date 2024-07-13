@@ -3,14 +3,14 @@ import sys
 import random
 import time
 
-
+#arthurs commit
 def main():
     # turn on pygame
     pygame.init()
 #h
 
     # create a screen
-    pygame.display.set_caption("Cool Project")
+    pygame.display.set_caption("Dimension Hopper")
     # TODO: Change the size of the screen as you see fit!
     screen = pygame.display.set_mode((640, 480))
 
