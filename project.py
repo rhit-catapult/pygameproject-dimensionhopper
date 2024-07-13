@@ -8,6 +8,7 @@ def main():
     # turn on pygame
     pygame.init()
 
+#hi
     # create a screen
     pygame.display.set_caption("Cool Project")
     # TODO: Change the size of the screen as you see fit!
