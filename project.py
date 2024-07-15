@@ -3,17 +3,27 @@ import sys
 import random
 import time
 
+# Initialize Pygame
+pygame.init()
 
-backgrounds = [
-]
+# Screen dimensions
+SCREEN_WIDTH = 1400
+SCREEN_HEIGHT = 860
+BLOCK_SIZE = SCREEN_WIDTH // 25  # Each block is a unit on the 25x19 grid
 
+# Colors
+WHITE = (255, 255, 255)
+BLOCK_COLOR = (0, 0, 0)
+
+# Backgrounds list
+backgrounds = []
+
+# Current background index
 current_background_index = 0
-
 
 def change_background():
     global current_background_index
     current_background_index = (current_background_index + 1) % len(backgrounds)
-
 
 class Spike:
     def __init__(self, screen, x, y, image_filename):
@@ -22,10 +32,8 @@ class Spike:
         self.y = y
         self.image = pygame.image.load(image_filename)
 
-    #Spike is 60#83
     def draw(self):
         self.screen.blit(self.image, (self.x, self.y))
-
 
 class Block:
     def __init__(self, screen, x, y, width, height, color):
@@ -40,7 +48,43 @@ class Block:
     def draw(self):
         pygame.draw.rect(self.screen, self.color, self.rect)
 
+def create_map1(screen):
+    blocks = [
+        # Outer walls
+        *[(col, 'a') for col in range(1, 26)],
+        *[(col, 's') for col in range(1, 26)],
+        *[(1, row) for row in 'abcdefghijklmnopqrs'],
+        *[(25, row) for row in 'abcdefghijklmnopqrs'],
+        # Inner blocks
+        (2, 'k'), (3, 'k'), (3, 'o'), (3, 'p'), (4, 'm'), (4, 'n'), (4, 'o'), (4, 'p'),
+        (5, 'k'), (5, 'l'), (5, 'm'), (5, 'n'), (5, 'o'), (5, 'p'),
+        (6, 'k'), (6, 'l'), (6, 'm'), (6, 'n'), (6, 'o'), (7, 'b'), (7, 'c'), (7, 'l'), (7, 'm'), (7, 'n'),
+        (8, 'c'), (8, 'm'), (8, 'n'), (9, 'i'), (9, 'l'), (9, 'm'), (9, 'n'), (10, 'i'), (10, 'j'), (10, 'k'),
+        (10, 'l'), (10, 'n'), (10, 'o'), (10, 'r'), (11, 'j'), (11, 'o'), (11, 'r'), (12, 'j'), (12, 'm'),
+        (12, 'o'), (12, 'p'), (12, 'q'), (12, 'r'), (13, 'h'), (13, 'i'), (13, 'j'), (13, 'm'), (13, 'o'),
+        (14, 'f'), (14, 'g'), (14, 'h'), (14, 'i'), (14, 'j'), (14, 'm'), (14, 'r'), (15, 'h'), (15, 'i'),
+        (15, 'j'), (15, 'm'), (15, 'n'), (15, 'o'), (15, 'r'), (16, 'j'), (16, 'o'), (16, 'q'), (16, 'r'),
+        (17, 'j'), (17, 'k'), (17, 'o'), (18, 'i'), (18, 'j'), (18, 'k'), (18, 'l'), (18, 'n'), (18, 'o'),
+        (19, 'h'), (19, 'i'), (19, 'j'), (19, 'k'), (19, 'l'), (19, 'n'), (19, 'o'), (20, 'h'), (20, 'j'),
+        (20, 'l'), (20, 'n'), (20, 'o'), (21, 'j'), (21, 'm'), (21, 'n'), (21, 'o'), (22, 'j'), (22, 'm'),
+        (22, 'n'), (22, 'o'), (22, 'p'), (22, 'q'), (23, 'o'), (23, 'q')
+    ]
 
+    for col, row in blocks:
+        x = (col - 1) * BLOCK_SIZE
+        y = (ord(row) - ord('a')) * BLOCK_SIZE
+        block = Block(screen, x, y, BLOCK_SIZE, BLOCK_SIZE, BLOCK_COLOR)
+        block.draw()
+
+def create_backgrounds(screen):
+    global backgrounds
+    background1 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    background1.fill(WHITE)
+    create_map1(background1)
+    backgrounds.append(background1)
+
+def draw_background(screen):
+    screen.blit(backgrounds[current_background_index], (0, 0))
 
 def main():
     # turn on pygame
@@ -48,8 +92,10 @@ def main():
 
     # create a screen
     pygame.display.set_caption("Dimension Hopper")
-    # TODO: Change the size of the screen as you see fit!
-    screen = pygame.display.set_mode((1400, 860))
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    # Create the backgrounds
+    create_backgrounds(screen)
 
     # let's set the framerate
     clock = pygame.time.Clock()
@@ -57,19 +103,15 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-
-            # TODO: Add you events code
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:  # Change the background when 'C' is pressed
                     change_background()
 
-        # TODO: Fill the screen with whatever background color you like!
-        screen.fill((255, 255, 255))
-
-        # TODO: Add your project code
+        # Draw the current background
+        draw_background(screen)
 
         # don't forget the update, otherwise nothing will show up!
         pygame.display.update()
-
+        clock.tick(60)
 
 main()
