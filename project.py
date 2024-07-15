@@ -3,13 +3,17 @@ import sys
 import random
 import time
 
+
 backgrounds = [
 ]
 
 current_background_index = 0
+
+
 def change_background():
     global current_background_index
     current_background_index = (current_background_index + 1) % len(backgrounds)
+
 
 def main():
     # turn on pygame
@@ -39,7 +43,6 @@ def main():
 
         # don't forget the update, otherwise nothing will show up!
         pygame.display.update()
-
 
 
 main()
