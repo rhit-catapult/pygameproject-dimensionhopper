@@ -4,12 +4,23 @@ import random
 import time
 #hi
 
+backgrounds = [
+]
+
+current_background_index = 0
+
+
+def change_background():
+    global current_background_index
+    current_background_index = (current_background_index + 1) % len(backgrounds)
+
+
 def main():
     # turn on pygame
     pygame.init()
 
     # create a screen
-    pygame.display.set_caption("Cool Project")
+    pygame.display.set_caption("Dimension Hopper")
     # TODO: Change the size of the screen as you see fit!
     screen = pygame.display.set_mode((640, 480))
 
@@ -21,6 +32,9 @@ def main():
                 sys.exit()
 
             # TODO: Add you events code
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_c:  # Change the background when 'C' is pressed
+                    change_background()
 
         # TODO: Fill the screen with whatever background color you like!
         screen.fill((255, 255, 255))
@@ -29,5 +43,6 @@ def main():
 
         # don't forget the update, otherwise nothing will show up!
         pygame.display.update()
+
 
 main()
