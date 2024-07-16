@@ -1,7 +1,5 @@
 import pygame
 import sys
-import random
-import time
 
 # Initialize Pygame
 pygame.init()
@@ -9,7 +7,7 @@ pygame.init()
 # Screen dimensions
 SCREEN_WIDTH = 1400
 SCREEN_HEIGHT = 860
-BLOCK_SIZE = SCREEN_HEIGHT // 19  # Each block is a unit on the 25x19 grid
+BLOCK_SIZE = SCREEN_HEIGHT // 19
 
 # Colors
 WHITE = (255, 255, 255)
@@ -33,7 +31,6 @@ class Spike:
         self.image = pygame.image.load(image_filename)
         self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
         self.visible = True
-
 
     def draw(self):
         if self.visible:
