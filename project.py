@@ -1,9 +1,5 @@
 import pygame
 import sys
-import random
-import time
-
-# test
 
 # Initialize Pygame
 pygame.init()
@@ -34,7 +30,6 @@ class Spike:
         self.y = y
         self.image = pygame.image.load(image_filename)
         self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
-
 
     def draw(self):
         self.screen.blit(self.image, (self.x, self.y))
@@ -93,7 +88,7 @@ def create_map1(screen):
     for col, row in spikes:
         x = (col - 1) * BLOCK_SIZE
         y = (ord(row) - ord('a')) * BLOCK_SIZE
-        spike = Spike(screen, x, y, "spike1.png")  # Assuming you have a "spike1.png" image file
+        spike = Spike(screen, x, y, "spike.png")  # Assuming you have a "spike.png" image file
         spike.draw()
 
 def create_backgrounds(screen):
@@ -103,7 +98,8 @@ def create_backgrounds(screen):
     create_map1(background1)
     backgrounds.append(background1)
 
-    # screen.blit(backgrounds[current_background_index], (0, 0))
+def draw_background(screen):
+    screen.blit(backgrounds[current_background_index], (0, 0))
 
 def main():
     # turn on pygame
