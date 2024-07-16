@@ -32,10 +32,12 @@ class Spike:
         self.y = y
         self.image = pygame.image.load(image_filename)
         self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
+        self.visible = True
 
 
     def draw(self):
-        self.screen.blit(self.image, (self.x, self.y))
+        if self.visible:
+            self.screen.blit(self.image, (self.x, self.y))
 
 class Block:
     def __init__(self, screen, x, y, width, height, color):
@@ -94,6 +96,7 @@ def create_map1(screen):
         spike = Spike(screen, x, y, "spike1.png")  # Assuming you have a "spike1.png" image file
         spike.draw()
 
+
 def create_backgrounds(screen):
     global backgrounds
     background1 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -124,6 +127,12 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:  # Change the background when 'C' is pressed
                     change_background()
+                    Spike.visible = not Spike.visible
+
+
+
+
+
 
         # Draw the current background
         draw_background(screen)
