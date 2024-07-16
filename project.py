@@ -31,6 +31,8 @@ class Spike:
         self.x = x
         self.y = y
         self.image = pygame.image.load(image_filename)
+        self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
+
 
     def draw(self):
         self.screen.blit(self.image, (self.x, self.y))
