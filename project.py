@@ -5,7 +5,9 @@ import sys
 pygame.init()
 
 # Screen dimensions
-# THIS IS A CONFLICTT
+SCREEN_WIDTH = 1400
+SCREEN_HEIGHT = 860
+BLOCK_SIZE = SCREEN_HEIGHT // 19
 
 # Colors
 WHITE = (255, 255, 255)
