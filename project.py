@@ -9,7 +9,7 @@ pygame.init()
 # Screen dimensions
 SCREEN_WIDTH = 1400
 SCREEN_HEIGHT = 860
-BLOCK_SIZE = SCREEN_WIDTH // 25  # Each block is a unit on the 25x19 grid
+BLOCK_SIZE = SCREEN_HEIGHT // 19  # Each block is a unit on the 25x19 grid
 
 # Colors
 WHITE = (255, 255, 255)
@@ -70,11 +70,27 @@ def create_map1(screen):
         (22, 'n'), (22, 'o'), (22, 'p'), (22, 'q'), (23, 'o'), (23, 'q')
     ]
 
+    spikes = [
+        (2, 'j'), (2, 'l'), (2, 'm'), (4, 'r'), (5, 'j'), (5, 'r'), (6, 'j'), (7, 'r'),
+        (8, 'k'), (8, 'l'), (9, 'h'), (9, 'q'), (9, 'r'), (10, 'h'), (11, 'i'), (12, 'i'),
+        (12, 'l'), (13, 'p'), (14, 'k'), (14, 'q'), (15, 'g'), (15, 'k'), (16, 'i'), (16, 'm'),
+        (16, 'n'), (17, 'i'), (17, 'n'), (17, 'q'), (17, 'r'), (18, 'h'), (18, 'r'), (19, 'g'),
+        (19, 'q'), (19, 'r'), (20, 'g'), (20, 'r'), (21, 'g'), (22, 'g')
+    ]
+
+    # Draw blocks
     for col, row in blocks:
         x = (col - 1) * BLOCK_SIZE
         y = (ord(row) - ord('a')) * BLOCK_SIZE
         block = Block(screen, x, y, BLOCK_SIZE, BLOCK_SIZE, BLOCK_COLOR)
         block.draw()
+
+    # Draw spikes
+    for col, row in spikes:
+        x = (col - 1) * BLOCK_SIZE
+        y = (ord(row) - ord('a')) * BLOCK_SIZE
+        spike = Spike(screen, x, y, "spike.png")  # Assuming you have a "spike.png" image file
+        spike.draw()
 
 def create_backgrounds(screen):
     global backgrounds
