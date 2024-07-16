@@ -5,7 +5,7 @@ import sys
 pygame.init()
 
 # Screen dimensions
-# THIS IS A CONFLICT
+# THIS IS A CONFLICTT
 
 # Colors
 WHITE = (255, 255, 255)
