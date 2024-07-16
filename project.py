@@ -103,8 +103,7 @@ def create_backgrounds(screen):
     create_map1(background1)
     backgrounds.append(background1)
 
-def draw_background(screen):
-    screen.blit(backgrounds[current_background_index], (0, 0))
+    # screen.blit(backgrounds[current_background_index], (0, 0))
 
 def main():
     # turn on pygame
