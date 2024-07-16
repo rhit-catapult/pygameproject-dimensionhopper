@@ -89,7 +89,7 @@ def create_map1(screen):
     for col, row in spikes:
         x = (col - 1) * BLOCK_SIZE
         y = (ord(row) - ord('a')) * BLOCK_SIZE
-        spike = Spike(screen, x, y, "spike.png")  # Assuming you have a "spike.png" image file
+        spike = Spike(screen, x, y, "spike1.png")  # Assuming you have a "spike1.png" image file
         spike.draw()
 
 def create_backgrounds(screen):
