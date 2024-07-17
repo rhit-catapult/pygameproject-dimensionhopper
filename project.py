@@ -7,7 +7,7 @@ pygame.init()
 # Screen dimensions
 SCREEN_WIDTH = 1400
 SCREEN_HEIGHT = 860
-BLOCK_SIZE = SCREEN_HEIGHT // 19
+BLOCK_SIZE = SCREEN_HEIGHT // 19  # Each block is a unit on the 25x19 grid
 
 # Colors
 WHITE = (255, 255, 255)
@@ -30,11 +30,9 @@ class Spike:
         self.y = y
         self.image = pygame.image.load(image_filename)
         self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
-        self.visible = True
 
     def draw(self):
-        if self.visible:
-            self.screen.blit(self.image, (self.x, self.y))
+        self.screen.blit(self.image, (self.x, self.y))
 
 class Block:
     def __init__(self, screen, x, y, width, height, color):
@@ -90,9 +88,28 @@ def create_map1(screen):
     for col, row in spikes:
         x = (col - 1) * BLOCK_SIZE
         y = (ord(row) - ord('a')) * BLOCK_SIZE
-        spike = Spike(screen, x, y, "spike1.png")  # Assuming you have a "spike1.png" image file
+        spike = Spike(screen, x, y, "spike1.png")  # Assuming you have a "spike.png" image file
         spike.draw()
 
+def create_map2(screen):
+    blocks = [
+        # Outer walls
+        *[(col, 'a') for col in range(1, 26)],
+        *[(col, 's') for col in range(1, 26)],
+        *[(1, row) for row in 'abcdefghijklmnopqrs'],
+        *[(25, row) for row in 'abcdefghijklmnopqrs'],
+        # Inner blocks
+        (4, 'g'), (5, 'f'), (5, 'g'), (5, 'h'), (5, 'i'), (7, 'j'), (9, 'h'), (9, 'i'),
+        (17, 'c'), (18, 'c'), (19, 'c'), (20, 'c'), (21, 'c'), (22, 'c'), (18, 'd'),
+        (18, 'e'), (19, 'd')
+    ]
+
+    # Draw blocks
+    for col, row in blocks:
+        x = (col - 1) * BLOCK_SIZE
+        y = (ord(row) - ord('a')) * BLOCK_SIZE
+        block = Block(screen, x, y, BLOCK_SIZE, BLOCK_SIZE, BLOCK_COLOR)
+        block.draw()
 
 def create_backgrounds(screen):
     global backgrounds
@@ -100,6 +117,11 @@ def create_backgrounds(screen):
     background1.fill(WHITE)
     create_map1(background1)
     backgrounds.append(background1)
+
+    background2 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    background2.fill(WHITE)
+    create_map2(background2)
+    backgrounds.append(background2)
 
 def draw_background(screen):
     screen.blit(backgrounds[current_background_index], (0, 0))
@@ -124,12 +146,6 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:  # Change the background when 'C' is pressed
                     change_background()
-                    Spike.visible = not Spike.visible
-
-
-
-
-
 
         # Draw the current background
         draw_background(screen)
@@ -137,5 +153,6 @@ def main():
         # don't forget the update, otherwise nothing will show up!
         pygame.display.update()
         clock.tick(60)
+
 
 main()
