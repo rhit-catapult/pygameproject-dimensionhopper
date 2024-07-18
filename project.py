@@ -1,13 +1,15 @@
 import pygame
 import sys
 
-# Initialize Pygame
-pygame.init()
-
-# Screen dimensions
-SCREEN_WIDTH = 1400
-SCREEN_HEIGHT = 860
-BLOCK_SIZE = SCREEN_HEIGHT // 19  # Each block is a unit on the 25x19 grid
+# Constants
+WIDTH, HEIGHT = 1120, 860
+GRAVITY = 0.2
+JUMP_HEIGHT = 9
+DASH_VELOCITY = 12  # Dash velocity, similar to horizontal jump speed
+DASH_DURATION = 10  # Duration of the dash in frames
+BLOCK_SIZE = HEIGHT // 19  # Each block is a unit on the 25x19 grid
+PLAYER_SIZE = int(BLOCK_SIZE * 0.7)  # Player size is 0.7 of a block unit
+MOVE_SPEED = 4  # Horizontal move speed
 
 # Colors
 WHITE = (255, 255, 255)
@@ -23,19 +25,148 @@ def change_background():
     global current_background_index
     current_background_index = (current_background_index + 1) % len(backgrounds)
 
-class Spike:
+class Player(pygame.sprite.Sprite):
+    def __init__(self, screen, x, y, left_character_file, right_character_file):
+        super().__init__()
+        self.screen = screen
+        self.imageR = pygame.image.load(right_character_file)
+        self.imageL = pygame.image.load(left_character_file)
+        self.imageR = pygame.transform.scale(self.imageR, (PLAYER_SIZE, PLAYER_SIZE))
+        self.imageL = pygame.transform.scale(self.imageL, (PLAYER_SIZE, PLAYER_SIZE))
+        self.image = self.imageR
+        self.image.set_colorkey(WHITE)
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.speed_x = 0
+        self.speed_y = 0
+        self.is_jumping = False
+        self.jump_start_y = 0  # Track the starting Y position of the jump
+        self.jump_height_limit = 2 * BLOCK_SIZE  # Maximum jump height
+        self.is_touching_ground = False
+        self.is_dashing = False
+        self.dash_timer = 0
+        self.dash_counter = 0  # Dash counter to limit mid-air dashes
+        self.facing_left = False
+
+    def draw(self):
+        if self.facing_left:
+            self.image = self.imageL
+        else:
+            self.image = self.imageR
+        self.screen.blit(self.image, self.rect.topleft)
+
+    def update_player(self, blocks):
+        if not self.is_dashing:
+            self.speed_y += GRAVITY
+        else:
+            self.dash_timer -= 1
+            if self.dash_timer <= 0:
+                self.is_dashing = False
+                self.speed_x = 0
+
+        self.rect.x += self.speed_x
+
+        # Horizontal collision handling
+        for block in blocks:
+            if self.rect.colliderect(block.rect):
+                if self.speed_x > 0:
+                    self.rect.right = block.rect.left
+                elif self.speed_x < 0:
+                    self.rect.left = block.rect.right
+
+        self.rect.y += self.speed_y
+
+        # Vertical collision handling
+        self.is_touching_ground = False
+        for block in blocks:
+            if self.rect.colliderect(block.rect):
+                if self.speed_y > 0:
+                    self.rect.bottom = block.rect.top
+                    self.speed_y = 0
+                    self.is_touching_ground = True
+                    self.jump_counter = 0
+                    self.dash_counter = 0  # Reset dash counter when touching the ground
+                elif self.speed_y < 0:
+                    self.rect.top = block.rect.bottom
+                    self.speed_y = 0
+
+        # Cap the jump height
+        if self.is_jumping:
+            if self.rect.y <= self.jump_start_y - self.jump_height_limit:
+                self.speed_y = 0  # Stop the jump
+                self.is_jumping = False
+
+        # Screen bounds collision
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
+            self.speed_y = 0
+            self.is_touching_ground = True
+            self.jump_counter = 0
+            self.dash_counter = 0
+
+    def move_left(self):
+        self.speed_x = -MOVE_SPEED
+        self.facing_left = True
+
+    def move_right(self):
+        self.speed_x = MOVE_SPEED
+        self.facing_left = False
+
+    def stop(self):
+        if not self.is_dashing:
+            self.speed_x = 0
+
+    def jump(self):
+        if self.jump_counter < 2:
+            self.speed_y = -JUMP_HEIGHT
+            self.jump_start_y = self.rect.y  # Record the starting Y position of the jump
+            self.is_jumping = True
+            self.jump_counter += 1
+
+    def dash_left(self):
+        if not self.is_dashing and self.dash_counter < 1:
+            self.speed_x = -DASH_VELOCITY
+            self.dash_timer = DASH_DURATION
+            self.is_dashing = True
+            self.dash_counter += 1
+
+    def dash_right(self):
+        if not self.is_dashing and self.dash_counter < 1:
+            self.speed_x = DASH_VELOCITY
+            self.dash_timer = DASH_DURATION
+            self.is_dashing = True
+            self.dash_counter += 1
+
+    def reset_position(self):
+        self.rect.topleft = (8 - 1) * BLOCK_SIZE, ((ord('o') - ord('a')) * BLOCK_SIZE)
+        self.speed_x = 0
+        self.speed_y = 0
+        self.jump_counter = 0
+        self.dash_counter = 0
+
+class Spike(pygame.sprite.Sprite):
     def __init__(self, screen, x, y, image_filename):
+        super().__init__()
         self.screen = screen
         self.x = x
         self.y = y
         self.image = pygame.image.load(image_filename)
         self.image = pygame.transform.scale(self.image, (BLOCK_SIZE, BLOCK_SIZE))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.hitbox = pygame.Rect(self.rect.x + BLOCK_SIZE // 4, self.rect.y + BLOCK_SIZE // 4,
+                                  BLOCK_SIZE // 2, BLOCK_SIZE // 2)
 
     def draw(self):
         self.screen.blit(self.image, (self.x, self.y))
 
-class Block:
+class Block(pygame.sprite.Sprite):
     def __init__(self, screen, x, y, width, height, color):
+        super().__init__()
         self.screen = screen
         self.x = x
         self.y = y
@@ -77,19 +208,26 @@ def create_map1(screen):
         (19, 'q'), (19, 'r'), (20, 'g'), (20, 'r'), (21, 'g'), (22, 'g')
     ]
 
+    block_sprites = pygame.sprite.Group()
+    spike_sprites = pygame.sprite.Group()
+
     # Draw blocks
     for col, row in blocks:
         x = (col - 1) * BLOCK_SIZE
         y = (ord(row) - ord('a')) * BLOCK_SIZE
         block = Block(screen, x, y, BLOCK_SIZE, BLOCK_SIZE, BLOCK_COLOR)
         block.draw()
+        block_sprites.add(block)
 
     # Draw spikes
     for col, row in spikes:
         x = (col - 1) * BLOCK_SIZE
         y = (ord(row) - ord('a')) * BLOCK_SIZE
-        spike = Spike(screen, x, y, "spike1.png")  # Assuming you have a "spike.png" image file
+        spike = Spike(screen, x, y, "spike1.png")  # Assuming you have a "spike1.png" image file
         spike.draw()
+        spike_sprites.add(spike)
+
+    return block_sprites, spike_sprites
 
 def create_map2(screen):
     blocks = [
@@ -104,55 +242,91 @@ def create_map2(screen):
         (18, 'e'), (19, 'd')
     ]
 
+    block_sprites = pygame.sprite.Group()
+
     # Draw blocks
     for col, row in blocks:
         x = (col - 1) * BLOCK_SIZE
         y = (ord(row) - ord('a')) * BLOCK_SIZE
         block = Block(screen, x, y, BLOCK_SIZE, BLOCK_SIZE, BLOCK_COLOR)
         block.draw()
+        block_sprites.add(block)
+
+    return block_sprites
 
 def create_backgrounds(screen):
     global backgrounds
-    background1 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    background1 = pygame.Surface((WIDTH, HEIGHT))
     background1.fill(WHITE)
-    create_map1(background1)
-    backgrounds.append(background1)
+    block_sprites1, spike_sprites1 = create_map1(background1)
+    backgrounds.append((background1, block_sprites1, spike_sprites1))
 
-    background2 = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    background2 = pygame.Surface((WIDTH, HEIGHT))
     background2.fill(WHITE)
-    create_map2(background2)
-    backgrounds.append(background2)
+    block_sprites2 = create_map2(background2)
+    backgrounds.append((background2, block_sprites2, None))
 
 def draw_background(screen):
-    screen.blit(backgrounds[current_background_index], (0, 0))
+    background, _, _ = backgrounds[current_background_index]
+    screen.blit(background, (0, 0))
 
 def main():
-    # turn on pygame
     pygame.init()
-
-    # create a screen
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Dimension Hopper")
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    clock = pygame.time.Clock()
+
+    initial_x = (8 - 1) * BLOCK_SIZE
+    initial_y = (ord('o') - ord('a')) * BLOCK_SIZE
+    player = Player(screen, initial_x, initial_y, "HeroKidL.png", "HeroKidR.png")
+
+    all_sprites = pygame.sprite.Group(player)
 
     # Create the backgrounds
     create_backgrounds(screen)
 
-    # let's set the framerate
-    clock = pygame.time.Clock()
-    while True:
+    running = True
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                if event.key == pygame.K_a:
+                    player.move_left()
+                if event.key == pygame.K_d:
+                    player.move_right()
+                if event.key == pygame.K_w:
+                    player.jump()
+                if event.key == pygame.K_COMMA:
+                    player.dash_left()
+                if event.key == pygame.K_PERIOD:
+                    player.dash_right()
                 if event.key == pygame.K_c:  # Change the background when 'C' is pressed
                     change_background()
 
-        # Draw the current background
-        draw_background(screen)
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_a or event.key == pygame.K_d:
+                    player.stop()
 
-        # don't forget the update, otherwise nothing will show up!
-        pygame.display.update()
+        background, block_sprites, spike_sprites = backgrounds[current_background_index]
+        player.update_player(block_sprites)
+
+        # Collision with spikes
+        if spike_sprites:
+            for spike in spike_sprites:
+                if player.rect.colliderect(spike.hitbox):
+                    player.reset_position()
+
+        screen.fill(WHITE)
+        draw_background(screen)
+        all_sprites.draw(screen)
+        player.draw()
+
+        pygame.display.flip()
         clock.tick(60)
 
-
-main()
+if __name__ == "__main__":
+    main()

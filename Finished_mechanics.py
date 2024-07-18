@@ -4,10 +4,14 @@ import sys
 # Constants
 WIDTH, HEIGHT = 1400, 860
 RADIUS = 20
-GRAVITY = .9
+GRAVITY = 0
 JUMP_HEIGHT = 20
-PLATFORM_WIDTH = 200
-PLATFORM_HEIGHT = 20
+PLATFORM_WIDTH_RATIO = 0.14  # Platform width as a ratio of screen width
+PLATFORM_HEIGHT_RATIO = 0.023  # Platform height as a ratio of screen height
+BLOCK_SIZE = HEIGHT // 19  # Each block is a unit on the 25x19 grid
+
+PLATFORM_WIDTH = int(WIDTH * PLATFORM_WIDTH_RATIO)
+PLATFORM_HEIGHT = int(HEIGHT * PLATFORM_HEIGHT_RATIO)
 
 # Colors
 WHITE = (255, 255, 255)
@@ -16,21 +20,31 @@ GREEN = (0, 255, 0)
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, screen, x, y, left_character_file, right_character_file):
         super().__init__()
-        self.image = pygame.image.load('HeroKidR.png')
+        self.screen = screen
+        self.imageR = pygame.image.load(right_character_file)
+        self.imageL = pygame.image.load(left_character_file)
+        self.imageR = pygame.transform.scale(self.imageR, (BLOCK_SIZE, BLOCK_SIZE))
+        self.imageL = pygame.transform.scale(self.imageL, (BLOCK_SIZE, BLOCK_SIZE))
+        self.image = self.imageR
         self.image.set_colorkey(WHITE)
-        self.rect = self.image.get_rect(center=(WIDTH / 2, HEIGHT / 2))
-        self.is_jumping = False
-        self.is_touching_ground = False
-        self.moving_left = False
-        self.moving_right = False
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.speed_x = 0
         self.speed_y = 0
+        self.is_jumping = False
         self.jump_counter = 0
-        self.dash_timer = 0
+        self.is_touching_ground = False
+        self.facing_left = False
 
-    def update(self):
+    def draw(self):
+        if self.facing_left:
+            self.image = self.imageL
+        else:
+            self.image = self.imageR
+        self.screen.blit(self.image, self.rect.topleft)
+
+    def update_player(self):
         self.speed_y += GRAVITY
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
@@ -46,26 +60,14 @@ class Player(pygame.sprite.Sprite):
             self.speed_y = 0
             self.is_touching_ground = True
             self.jump_counter = 0
-        if self.dash_timer > 0:
-            self.dash_timer -= 1
-            if self.dash_timer == 0:
-                self.stop()
 
     def move_left(self):
         self.speed_x = -5
-        self.image = pygame.image.load('HeroKidL.png')
+        self.facing_left = True
 
     def move_right(self):
         self.speed_x = 5
-        self.image = pygame.image.load('HeroKidR.png')
-
-    def dash(self):
-        if self.jump_counter < 2:
-            if self.moving_left:
-                self.speed_x = -40
-            elif self.moving_right:
-                self.speed_x = 40
-            self.dash_timer = 10
+        self.facing_left = False
 
     def stop(self):
         self.speed_x = 0
@@ -75,6 +77,11 @@ class Player(pygame.sprite.Sprite):
             self.speed_y = -JUMP_HEIGHT
             self.jump_counter += 1
 
+    def reset_position(self):
+        self.rect.topleft = ((ord('o') - ord('a')) * BLOCK_SIZE, 8 * BLOCK_SIZE)
+        self.speed_x = 0
+        self.speed_y = 0
+        self.jump_counter = 0
 
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -88,11 +95,14 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
-    player = Player()
     platform1 = Platform(WIDTH / 2, HEIGHT - PLATFORM_HEIGHT - 20)
     platform2 = Platform(WIDTH / 4, HEIGHT / 2)
     platform3 = Platform(WIDTH - WIDTH / 4, HEIGHT / 2)
     platform4 = Platform(WIDTH / 2 - 300, HEIGHT - PLATFORM_HEIGHT - 100)
+
+    initial_x = (ord('o') - ord('a')) * BLOCK_SIZE
+    initial_y = 2 * BLOCK_SIZE
+    player = Player(screen, initial_x, initial_y, "HeroKidL.png", "HeroKidR.png")
 
     all_sprites = pygame.sprite.Group(player, platform1, platform2, platform3, platform4)
     platforms = pygame.sprite.Group(platform1, platform2, platform3, platform4)
@@ -123,7 +133,7 @@ def main():
                     player.moving_left = False
                     player.moving_right = False
 
-        player.update()
+        player.update_player()
 
         for platform in platforms:
             if player.rect.colliderect(platform.rect):
