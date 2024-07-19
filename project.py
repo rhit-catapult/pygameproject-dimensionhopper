@@ -360,7 +360,7 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_q:
+                if event.key == pygame.K_p:
                     dev_mode = not dev_mode
                 if event.key == pygame.K_ESCAPE:
                     running = False
