@@ -259,6 +259,7 @@ def create_map2(screen):
     ]
 
     spikes = [(col, 'r') for col in range(2, 25)]
+    spikes.append((20, 'm'))  # Add spike at the diamond's location in map 2
 
     block_sprites = pygame.sprite.Group()
     spike_sprites = pygame.sprite.Group()
