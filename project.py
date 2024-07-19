@@ -26,6 +26,10 @@ def change_background():
     global current_background_index
     current_background_index = (current_background_index + 1) % len(backgrounds)
 
+def reset_to_map1():
+    global current_background_index
+    current_background_index = 0
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, screen, x, y, left_character_file, right_character_file):
         super().__init__()
@@ -254,7 +258,10 @@ def create_map2(screen):
         (18, 'e'), (19, 'd')
     ]
 
+    spikes = [(col, 'r') for col in range(2, 25)]
+
     block_sprites = pygame.sprite.Group()
+    spike_sprites = pygame.sprite.Group()
 
     # Draw blocks
     for col, row in blocks:
@@ -264,7 +271,15 @@ def create_map2(screen):
         block.draw()
         block_sprites.add(block)
 
-    return block_sprites
+    # Draw spikes
+    for col, row in spikes:
+        x = (col - 1) * BLOCK_SIZE
+        y = (ord(row) - ord('a')) * BLOCK_SIZE
+        spike = Spike(screen, x, y, "spike1.png")
+        spike.draw()
+        spike_sprites.add(spike)
+
+    return block_sprites, spike_sprites
 
 def create_backgrounds(screen):
     global backgrounds
@@ -276,8 +291,8 @@ def create_backgrounds(screen):
 
     background2 = pygame.Surface((WIDTH, HEIGHT))
     background2.fill(WHITE)
-    block_sprites2 = create_map2(background2)
-    backgrounds.append((background2, block_sprites2, None, None))
+    block_sprites2, spike_sprites2 = create_map2(background2)
+    backgrounds.append((background2, block_sprites2, spike_sprites2, None))
 
 def draw_background(screen):
     background, _, _, diamond = backgrounds[current_background_index]
@@ -339,7 +354,7 @@ def main():
                         player.dash_left()
                     if event.key == pygame.K_PERIOD:
                         player.dash_right()
-                    if event.key == pygame.K_SLASH:  # Change the background when 'C' is pressed
+                    if event.key == pygame.K_SLASH:  # Change the background when '/' is pressed
                         change_background()
                 if game_won and event.key == pygame.K_SPACE:
                     game_won = False
@@ -358,6 +373,7 @@ def main():
             if spike_sprites:
                 for spike in spike_sprites:
                     if player.rect.colliderect(spike.hitbox):
+                        reset_to_map1()
                         player.reset_position()
 
             # Collision with diamond
