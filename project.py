@@ -10,6 +10,7 @@ DASH_DURATION = 9  # Duration of the dash in frames
 BLOCK_SIZE = HEIGHT // 19  # Each block is a unit on the 25x19 grid
 PLAYER_SIZE = int(BLOCK_SIZE * 0.7)  # Player size is 0.7 of a block unit
 MOVE_SPEED = 4  # Horizontal move speed
+dev_mode = False
 
 # Colors
 WHITE = (255, 255, 255)
@@ -260,6 +261,12 @@ def create_map2(screen):
 
     spikes = [(col, 'r') for col in range(2, 25)]
     spikes.append((20, 'm'))  # Add spike at the diamond's location in map 2
+    spikes.append((19, 'm'))
+    spikes.append((18, 'm'))
+    spikes.append((12, 'p'))
+    spikes.append((12, 'o'))
+    spikes.append((11, 'o'))
+    spikes.append((10, 'o'))
 
     block_sprites = pygame.sprite.Group()
     spike_sprites = pygame.sprite.Group()
@@ -320,6 +327,7 @@ def reset_game(player, block_sprites, spike_sprites, diamond):
     player.dash_counter = 0
 
 def main():
+    global  dev_mode
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Dimension Hopper")
@@ -342,6 +350,8 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    dev_mode = not dev_mode
                 if event.key == pygame.K_ESCAPE:
                     running = False
                 if not game_won:
@@ -371,7 +381,8 @@ def main():
             player.update_player(block_sprites)
 
             # Collision with spikes
-            if spike_sprites:
+            if spike_sprites and not dev_mode:
+
                 for spike in spike_sprites:
                     if player.rect.colliderect(spike.hitbox):
                         reset_to_map1()
