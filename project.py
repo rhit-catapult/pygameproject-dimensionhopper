@@ -11,7 +11,8 @@ BLOCK_SIZE = HEIGHT // 19  # Each block is a unit on the 25x19 grid
 PLAYER_SIZE = int(BLOCK_SIZE * 0.7)  # Player size is 0.7 of a block unit
 MOVE_SPEED = 4  # Horizontal move speed
 dev_mode = False
-
+start_time = 0
+record = 0
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -309,8 +310,12 @@ def draw_background(screen):
         diamond.draw()
 
 def display_win(screen):
+    global record,start_time
+    if record == 0:
+        record = pygame.time.get_ticks()-start_time
+        record /= 1000
     font = pygame.font.SysFont(None, 75)
-    text_surface = font.render("YOU WIN", True, BLACK)
+    text_surface = font.render("YOU WIN"+str((record)), True, BLACK)
     text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
     screen.blit(text_surface, text_rect)
 
@@ -320,17 +325,19 @@ def display_win(screen):
     screen.blit(text_surface_small, text_rect_small)
 
 def reset_game(player, block_sprites, spike_sprites, diamond):
+    global  start_time,record
     player.reset_position()
     player.speed_x = 0
     player.speed_y = 0
     player.jump_counter = 0
     player.dash_counter = 0
-
+    start_time = pygame.time.get_ticks()
+    record=0
 def main():
-    global  dev_mode
+    global  dev_mode,start_time,record
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Dimension Hopper")
+    #pygame.display.set_caption("Dimension Hopper")
     clock = pygame.time.Clock()
 
     initial_x = (8 - 1) * BLOCK_SIZE
@@ -344,7 +351,10 @@ def main():
 
     game_won = False
     running = True
+    font = pygame.font.Font(None, 74)
     while running:
+
+        pygame.display.set_caption("Dimension Hopper")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -386,6 +396,8 @@ def main():
                 for spike in spike_sprites:
                     if player.rect.colliderect(spike.hitbox):
                         reset_to_map1()
+                        record = 0
+                        start_time = pygame.time.get_ticks()
                         player.reset_position()
 
             # Collision with diamond
@@ -399,7 +411,7 @@ def main():
         else:
             screen.fill(WHITE)
             display_win(screen)
-
+        screen.blit(font.render(str((pygame.time.get_ticks()-start_time)/1000), True, "WHITE"), (0, 0))
         pygame.display.flip()
         clock.tick(60)
 
